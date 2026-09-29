@@ -1,0 +1,3 @@
+Écris la date de validité sur tes devis. Sans elle, un client peut accepter dans six mois, au prix d'aujourd'hui.
+
+Tu la mets déjà ?

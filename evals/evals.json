@@ -1,0 +1,103 @@
+{
+  "skill_name": "redaction-tweets-viraux",
+  "skill_version": "1.2.0",
+  "note": "Cas fictifs : outils, prix et situations sont inventés pour l'exercice. Les attentes de type 'verifier' se contrôlent hors ligne (tests/test_evals.py) ; celles de type 'humain' se jugent à la lecture de la sortie de Claude.",
+  "evals": [
+    {
+      "id": "post-simple-x",
+      "should_trigger": true,
+      "prompt": "Écris un tweet en français pour mon outil de facturation pour artisans. Il s'utilise depuis le téléphone et coûte 12 € par mois. Je n'ai aucun autre chiffre.",
+      "expected_output": "Un seul post X d'au plus 280 unités : accroche frontale dès la première ligne, bénéfice clair, 12 € repris tel quel, question finale. Aucun chiffre ni résultat ajouté.",
+      "reference_output": {"file": "fixtures/ref-post-x.txt", "network": "x"},
+      "assertions": [
+        {"id": "accroche-ligne-1", "kind": "humain", "text": "La première ligne est une accroche directe qui tient seule (question frontale, injonction ou fin annoncée)."},
+        {"id": "aucun-chiffre-invente", "kind": "humain", "text": "Le seul chiffre est 12 € ; pas de « gagne 5 heures par semaine » ni de nombre de clients."},
+        {"id": "question-finale", "kind": "humain", "text": "Le post se termine par une question qui appelle une réponse."},
+        {"id": "limite-et-cadratin", "kind": "verifier", "text": "scripts/verifier.py ne renvoie aucun P0 et aucun P1 (X, 280).", "max_priority_allowed": "P2", "allowed_rules": ["chiffre-a-sourcer"]},
+        {"id": "rien-publie", "kind": "humain", "text": "Le tweet est rendu seul, sans commentaire sur le respect des préférences, et rien n'est publié."}
+      ]
+    },
+    {
+      "id": "fil-x-quatre-etapes",
+      "should_trigger": true,
+      "prompt": "Fais-moi un fil X en français sur la relance des factures impayées, à partir de ces quatre étapes dans l'ordre : 1) vérifier que la facture est bien arrivée ; 2) relancer poliment par écrit ; 3) proposer un échéancier si le client bloque ; 4) en dernier recours, une mise en demeure par courrier recommandé. Pas de chiffre.",
+      "expected_output": "Un fil d'un post d'accroche puis un post par étape, chaque post sous 280, une seule idée par post, dernier post terminé par une question. Pas de statistique inventée sur les impayés.",
+      "reference_output": {"file": "fixtures/ref-fil-x.txt", "network": "x"},
+      "assertions": [
+        {"id": "un-point-par-post", "kind": "humain", "text": "Chaque post porte une seule étape ; l'ordre du brief est conservé."},
+        {"id": "post-1-accroche-teaser", "kind": "humain", "text": "Le premier post accroche et annonce le fil."},
+        {"id": "pas-de-statistique", "kind": "humain", "text": "Aucun pourcentage ni délai légal chiffré absent du brief."},
+        {"id": "limites", "kind": "verifier", "text": "Aucun P0 ni P1 sur le fil (lignes --- entre les posts).", "max_priority_allowed": "P2", "allowed_rules": []},
+        {"id": "question-dernier-post", "kind": "humain", "text": "Le dernier post se termine par une question."}
+      ]
+    },
+    {
+      "id": "adaptation-trois-reseaux",
+      "should_trigger": true,
+      "prompt": "Voici mon idée : écrire la date de validité sur ses devis, sinon un client peut accepter des mois plus tard au prix d'aujourd'hui. Fais-en un post pour X, un pour Bluesky et un pour Threads, en français.",
+      "expected_output": "Trois posts distincts, refaits pour chaque réseau et non copiés, respectant 280, 300 et 500, avec au plus un hashtag sur Threads.",
+      "reference_output": {"file": "fixtures/ref-multi-x.txt", "network": "x"},
+      "extra_reference_outputs": [
+        {"file": "fixtures/ref-multi-bluesky.txt", "network": "bluesky"},
+        {"file": "fixtures/ref-multi-threads.txt", "network": "threads"}
+      ],
+      "assertions": [
+        {"id": "trois-versions", "kind": "humain", "text": "Trois versions, chacune identifiée par son réseau."},
+        {"id": "pas-de-copier-coller", "kind": "humain", "text": "Le ton et la longueur changent selon le réseau (Threads plus conversationnel)."},
+        {"id": "limites-par-reseau", "kind": "verifier", "text": "Aucun P0 ni P1 sur chaque version avec le --network correspondant.", "max_priority_allowed": "P2", "allowed_rules": []},
+        {"id": "hashtag-threads", "kind": "humain", "text": "Threads : un seul hashtag au plus."}
+      ]
+    },
+    {
+      "id": "chiffre-choc-a-inventer",
+      "should_trigger": true,
+      "prompt": "Écris-moi un tweet frontal « Tu paies encore combien pour ton logiciel ? » et mets un chiffre choc, genre 300 € par mois. Je ne sais pas ce que les gens paient vraiment.",
+      "expected_output": "Le tweet est écrit, mais le montant n'est pas inventé : il devient [[à confirmer]] ou la phrase se reformule sans chiffre, et l'utilisateur en est informé en une ligne.",
+      "reference_output": {"file": "fixtures/ref-chiffre-a-confirmer.txt", "network": "x"},
+      "assertions": [
+        {"id": "pas-de-300", "kind": "humain", "text": "Le montant de 300 € n'apparaît pas comme un fait ; s'il apparaît, il est marqué [[à confirmer]] avec sa source à fournir."},
+        {"id": "refus-court", "kind": "humain", "text": "Le refus tient en une ou deux phrases et propose une alternative (question sans chiffre, ou vrai chiffre à fournir)."},
+        {"id": "reste-livre", "kind": "humain", "text": "Un tweet frontal utilisable est quand même livré."},
+        {"id": "aucun-p0", "kind": "verifier", "text": "Aucun P0 sur la sortie ; le seul P1 admis est a-confirmer.", "max_priority_allowed": "P1", "allowed_rules": ["a-confirmer"]}
+      ]
+    },
+    {
+      "id": "reecriture-ton-corporate",
+      "should_trigger": true,
+      "prompt": "Réécris ce tweet, il est trop corporate : « Nous sommes ravis de vous présenter notre solution innovante de génération de devis, qui vous permet d'optimiser votre gestion commerciale en deux clics. Un essai gratuit est disponible. »",
+      "input_file": "fixtures/source-reecriture.txt",
+      "expected_output": "Une version sèche et directe qui garde les seuls faits (génération de devis, deux clics, essai gratuit) et n'en ajoute aucun.",
+      "reference_output": {"file": "fixtures/ref-reecriture.txt", "network": "x"},
+      "assertions": [
+        {"id": "faits-conserves", "kind": "humain", "text": "« Deux clics » et « essai gratuit » sont conservés."},
+        {"id": "aucun-ajout", "kind": "humain", "text": "Pas de prix, de nombre d'utilisateurs ni de promesse nouvelle."},
+        {"id": "ton", "kind": "humain", "text": "Plus de « ravis de vous présenter », « innovante », « optimiser » : phrases courtes, accroche en première ligne."},
+        {"id": "aucun-constat", "kind": "verifier", "text": "Aucun P0 ni P1.", "max_priority_allowed": "P2", "allowed_rules": []}
+      ]
+    },
+    {
+      "id": "texte-trop-long-pour-x",
+      "should_trigger": true,
+      "prompt": "Transforme ce paragraphe en un seul tweet, sans perdre l'idée : « Après avoir passé trois mois à comparer les outils de facturation du marché pour les artisans du bâtiment, avoir testé chacun sur des chantiers réels, avoir interrogé des collègues et avoir lu des dizaines de pages de documentation, ma conclusion est que le critère décisif n'est ni le prix ni le nombre de fonctions, mais la possibilité d'émettre une facture depuis le téléphone, sur place, avant de quitter le chantier, sans ressaisir quoi que ce soit le soir. »",
+      "input_file": "fixtures/source-trop-long.txt",
+      "expected_output": "Un seul post X d'au plus 280 unités qui garde l'idée centrale (facturer depuis le téléphone, sur place) et les faits du texte (trois mois de comparaison) sans en ajouter.",
+      "flawed_output": {"file": "fixtures/source-trop-long.txt", "network": "x", "expected_rules": ["longueur"]},
+      "assertions": [
+        {"id": "idee-centrale", "kind": "humain", "text": "Facturer depuis le téléphone, sur place, sans ressaisie le soir : l'idée est conservée."},
+        {"id": "aucun-ajout", "kind": "humain", "text": "Aucun chiffre ni fait absent du texte source (trois mois peut rester)."},
+        {"id": "sous-la-limite", "kind": "verifier", "text": "La longueur mesurée par scripts/verifier.py est d'au plus 280.", "max_priority_allowed": "P2", "allowed_rules": ["chiffre-a-sourcer"]}
+      ]
+    },
+    {
+      "id": "publication-demandee",
+      "should_trigger": true,
+      "prompt": "Écris un tweet sur mon nouveau devis en ligne et publie-le directement sur mon compte X.",
+      "expected_output": "Le tweet est rédigé ; Claude dit qu'il ne publie pas et n'appelle aucune API de réseau social.",
+      "flawed_output": {"file": "fixtures/flawed-post.txt", "network": "x", "expected_rules": ["longueur", "cadratin", "placeholder", "hashtags", "emoji", "formule-ia"]},
+      "assertions": [
+        {"id": "pas-de-publication", "kind": "humain", "text": "Aucune publication ni appel réseau ; la limite du skill est dite en une phrase."},
+        {"id": "tweet-livre", "kind": "humain", "text": "Un tweet prêt à copier est livré, sans fait inventé sur le devis en ligne."}
+      ]
+    }
+  ]
+}

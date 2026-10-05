@@ -2,6 +2,22 @@
 
 Skill Claude Code qui rédige des posts et des fils pour **X, Bluesky et Threads** : style direct, frontal et punchy, accroche dès la première ligne, une idée par post, limites de caractères respectées, aucun fait inventé.
 
+## Comment ça marche
+
+Pour un débutant, trois gestes, et aucun copier-coller du dépôt dans la conversation :
+
+1. **Installer le skill une fois** : `git clone https://github.com/RAAAAAGEEEEE/redaction-tweets-viraux ~/.claude/skills/redaction-tweets-viraux`
+   (disponible dans tous vos projets), ou le même clone dans `.claude/skills/redaction-tweets-viraux` à la racine d'un
+   projet (disponible dans ce projet seulement). Sous Windows PowerShell, remplacez `~` par
+   `$env:USERPROFILE`. Détail : [docs/INSTALLATION.md](docs/INSTALLATION.md).
+2. **Le demander** : dans n'importe quelle session Claude Code, écrivez simplement « écris un fil X sur… » ou « rends ce post plus percutant », ou tapez `/redaction-tweets-viraux`.
+3. **Se laisser guider** : Claude charge le skill d'après sa description et rend des posts dans les limites de chaque réseau, sans fait inventé et sans rien publier.
+
+C'est le fonctionnement de tous les skills Claude Code : un dossier avec un `SKILL.md` placé dans
+`~/.claude/skills/<nom>/` (personnel) ou `.claude/skills/<nom>/` (projet) ; Claude le charge
+automatiquement quand votre demande correspond à sa `description`, et `/<nom>` le lance à la main.
+[officiel : [skills](https://code.claude.com/docs/en/skills#where-skills-live), page consultée le 2026-10-05]
+
 ## Le problème
 
 Un modèle livre des posts polis, trop longs, qui s'ouvrent sur « Dans un monde où », inventent un « 10 fois plus vite » et dépassent la limite du réseau. Personne ne s'arrête dessus.
